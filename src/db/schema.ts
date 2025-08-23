@@ -33,7 +33,6 @@ export const authTable = pgTable("authentication", {
   login_attempts: integer("login_attempts").default(0),
   last_login: timestamp("last_login"),
   locked_until: timestamp("locked_until"),
-  created_at: timestamp("created_at").defaultNow().notNull(),
   updated_at: timestamp("updated_at").defaultNow().$onUpdate(() => new Date())
 });
 
@@ -68,3 +67,13 @@ export const pinHistoryRelations = relations(pinHistoryTable, ({ one }) => ({
     references: [usersTable.id]
   })
 }));
+
+// type
+export type User = typeof usersTable.$inferSelect;
+export type NewUser = typeof usersTable.$inferInsert;
+
+export type Auth = typeof authTable.$inferSelect;
+export type NewAuth = typeof authTable.$inferInsert;
+
+export type PinHistory = typeof pinHistoryTable.$inferSelect;
+export type NewPinHistory = typeof pinHistoryTable.$inferInsert;
