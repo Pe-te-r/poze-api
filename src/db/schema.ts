@@ -24,10 +24,6 @@ export const authTable = pgTable("authentication", {
   id: uuid("id").primaryKey().defaultRandom(),
   user_id: uuid("user_id").notNull().unique().references(() => usersTable.id, { onDelete: 'cascade' }),
   password_hash: varchar("password_hash", { length: 255 }).notNull(),
-  transaction_pin_hash: varchar("transaction_pin_hash", { length: 255 }), // PIN for money transactions
-  pin_set: boolean("pin_set").default(false), // Whether PIN has been set
-  pin_attempts: integer("pin_attempts").default(0), // PIN attempt counter
-  pin_locked_until: timestamp("pin_locked_until"), // PIN lock timestamp
   confirmation_code: varchar("confirmation_code", { length: 10 }),
   confirmation_expires: timestamp("confirmation_expires"), // Code expiration
   login_attempts: integer("login_attempts").default(0),
@@ -37,9 +33,13 @@ export const authTable = pgTable("authentication", {
 });
 
 // Optional: Transaction PIN history table for security auditing
-export const pinHistoryTable = pgTable("pin_history", {
+export const pinManageTable = pgTable("pin_history", {
   id: uuid("id").primaryKey().defaultRandom(),
   user_id: uuid("user_id").notNull().references(() => usersTable.id, { onDelete: 'cascade' }),
+  pin_set: boolean("pin_set").default(false), // Whether PIN has been set
+  transaction_pin_hash: varchar("transaction_pin_hash", { length: 255 }), // PIN for money transactions
+  pin_attempts: integer("pin_attempts").default(0), // PIN attempt counter
+  pin_locked_until: timestamp("pin_locked_until"), // PIN lock timestamp
   changed_at: timestamp("changed_at").defaultNow(),
   changed_by: varchar("changed_by", { length: 50 }), // System or admin who changed it
   reason: varchar("reason", { length: 100 }) // Reason for PIN change
@@ -51,7 +51,7 @@ export const usersRelations = relations(usersTable, ({ one, many }) => ({
     fields: [usersTable.id],
     references: [authTable.user_id]
   }),
-  pinHistory: many(pinHistoryTable)
+  pinHistory: many(pinManageTable)
 }));
 
 export const authRelations = relations(authTable, ({ one }) => ({
@@ -61,9 +61,9 @@ export const authRelations = relations(authTable, ({ one }) => ({
   })
 }));
 
-export const pinHistoryRelations = relations(pinHistoryTable, ({ one }) => ({
+export const pinHistoryRelations = relations(pinManageTable, ({ one }) => ({
   user: one(usersTable, {
-    fields: [pinHistoryTable.user_id],
+    fields: [pinManageTable.user_id],
     references: [usersTable.id]
   })
 }));
@@ -75,5 +75,5 @@ export type NewUser = typeof usersTable.$inferInsert;
 export type Auth = typeof authTable.$inferSelect;
 export type NewAuth = typeof authTable.$inferInsert;
 
-export type PinHistory = typeof pinHistoryTable.$inferSelect;
-export type NewPinHistory = typeof pinHistoryTable.$inferInsert;
+export type PinHistory = typeof pinManageTable.$inferSelect;
+export type NewPinHistory = typeof pinManageTable.$inferInsert;
