@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 import db from "../db/db.js";
 import { authTable, usersTable, } from "../db/schema.js";
-import { hashService } from "../util.js";
+import { hashService } from "../helpers/hashService.js";
 
 export const registerService = async(userData:any)=>{
 return await db.transaction(async (tx) => {

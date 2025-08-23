@@ -13,7 +13,7 @@ export class HashService {
   async hashData(data: string): Promise<string> {
     try {
       return await bcrypt.hash(data, this.saltRounds);
-    } catch (error) {
+    } catch (error:any) {
       throw new Error(`Hashing failed: ${error.message}`);
     }
   }
@@ -24,7 +24,7 @@ export class HashService {
   async verifyData(data: string, hash: string): Promise<boolean> {
     try {
       return await bcrypt.compare(data, hash);
-    } catch (error) {
+    } catch (error: any) {
       throw new Error(`Verification failed: ${error.message}`);
     }
   }
@@ -49,7 +49,7 @@ export class HashService {
   async hashPin(pin: string, pinSaltRounds: number = 10): Promise<string> {
     try {
       return await bcrypt.hash(pin, pinSaltRounds);
-    } catch (error) {
+    } catch (error:any) {
       throw new Error(`PIN hashing failed: ${error.message}`);
     }
   }
@@ -74,21 +74,6 @@ export class HashService {
     
     return code;
   }
-
-  /**
-   * Generate a random alphanumeric token
-   */
-  generateRandomToken(length: number = 32): string {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    let token = '';
-    
-    for (let i = 0; i < length; i++) {
-      token += chars[Math.floor(Math.random() * chars.length)];
-    }
-    
-    return token;
-  }
-
   /**
    * Check if a hash needs to be refreshed (uses older algorithm or fewer rounds)
    */

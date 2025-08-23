@@ -12,3 +12,10 @@ export const loginController = async(c:Context)=>{
     const data = await loginService(phone, password);
     return c.json({ message: "Login successful", data }, 200);
 }
+
+export const setPinController = async(c:Context)=>{
+    const { userId, pin } = await c.req.json();
+    // Assuming setPinService is defined in auth.service.ts
+    // const data = await setPinService(userId, pin);
+    return c.json({ message: "PIN set successfully", 'data' :{}}, 200);
+}

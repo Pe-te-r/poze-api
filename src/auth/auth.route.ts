@@ -6,3 +6,4 @@ export const authApi = new Hono();
 
 authApi.post('/register', registerController);
 authApi.post('/login', loginController);
+authApi.patch('/set/pin',)
