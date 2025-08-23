@@ -1,4 +1,5 @@
 import * as jwt from 'jsonwebtoken';
+import { roleEnum } from '../db/schema.js';
 
 export class AuthTokenService {
   private readonly secretKey: string;
@@ -36,8 +37,8 @@ export class AuthTokenService {
     return jwt.sign(payload, this.refreshSecretKey, { expiresIn: '24h' });
   }
 
-  // Generate both tokens at once
-  generateAuthTokens(phone: string, role: string, userId: string): {
+  // Generate both tokens at once role can be type enum
+    generateAuthTokens(phone: string, role: string, userId: string): {
     accessToken: string;
     refreshToken: string;
   } {

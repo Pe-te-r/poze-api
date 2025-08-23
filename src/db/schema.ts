@@ -28,6 +28,7 @@ export const authTable = pgTable("authentication", {
   confirmation_expires: timestamp("confirmation_expires"), // Code expiration
   login_attempts: integer("login_attempts").default(0),
   last_login: timestamp("last_login"),
+  login_token: varchar("login_token", { length: 255 }),
   locked_until: timestamp("locked_until"),
   updated_at: timestamp("updated_at").defaultNow().$onUpdate(() => new Date())
 });
