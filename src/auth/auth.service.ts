@@ -99,3 +99,18 @@ export const updatePinService = async(userId:string,newPin:string,reason:string=
     });
     return { message: "PIN updated successfully" };
 }
+
+export const changePasswordService = async(userId:string, currentPassword:string, newPassword:string)=>{
+    const user = await db.query.usersTable.findFirst({
+        where: eq(usersTable.id,userId),
+        with: { auth: true }
+    });
+    if(!user) throw new Error("User not found");
+    const auth = user.auth;
+    if(!auth) throw new Error("Authentication record not found");
+    const passwordMatch = await hashService.verifyPassword(currentPassword, auth.password_hash);
+    if(!passwordMatch) throw new Error("Current password is incorrect");
+    const newHashedPassword = await hashService.hashPassword(newPassword);
+    await db.update(authTable).set({ password_hash: newHashedPassword }).where(eq(authTable.id, auth.id));
+    return { message: "Password changed successfully" };
+}

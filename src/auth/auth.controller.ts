@@ -25,3 +25,11 @@ export const changePinController = async(c:Context)=>{
     const data = await updatePinService(userId, newPin, reason);
     return c.json({ message: "PIN changed successfully", 'data' :{}}, 200);
 }
+
+export const changePasswordController = async(c:Context)=>{
+    
+}
+
+export const resetPasswordController = async(c:Context)=>{
+
+}
