@@ -4,6 +4,9 @@ import { relations, sql } from "drizzle-orm";
 // Role enum
 export const roleEnum = pgEnum("role", ["customer", "admin"]);
 
+// Referral claim status enum
+export const referralClaimStatusEnum = pgEnum("referral_claim_status", ["pending", "claimed", "expired"]);
+
 // Users table
 export const usersTable = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -49,12 +52,38 @@ export const pinAuditTable = pgTable("pin_audit_history", {
   id: uuid("id").primaryKey().defaultRandom(),
   user_id: uuid("user_id").notNull().references(() => usersTable.id, { onDelete: 'cascade' }),
   action_type: varchar("action_type", { length: 50 }).notNull(), // 'created', 'changed', 'reset', 'locked', 'unlocked'
-  // old_pin_hash: varchar("old_pin_hash", { length: 255 }), // Previous PIN hash (for change actions)
-  // new_pin_hash: varchar("new_pin_hash", { length: 255 }), // New PIN hash (for change actions)
   changed_at: timestamp("changed_at").defaultNow().notNull(),
   reason: varchar("reason", { length: 100 }), // Reason for PIN change
+  // old_pin_hash: varchar("old_pin_hash", { length: 255 }), // Previous PIN hash (for change actions)
+  // new_pin_hash: varchar("new_pin_hash", { length: 255 }), // New PIN hash (for change actions)
   // ip_address: varchar("ip_address", { length: 45 }), // IP address where action was performed
   // user_agent: varchar("user_agent", { length: 500 }) // Browser/device info
+});
+
+// User referral codes table - each user gets one unique referral code
+export const userReferralTable = pgTable("user_referrals", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  user_id: uuid("user_id").notNull().unique().references(() => usersTable.id, { onDelete: 'cascade' }),
+  referral_code: varchar("referral_code", { length: 10 }).notNull().unique(), // Unique code for this user
+  total_referrals: integer("total_referrals").default(0), // Count of successful referrals
+  total_earnings: integer("total_earnings").default(0), // Total money earned from referrals (in cents)
+  is_active: boolean("is_active").default(true), // Whether this referral code is active
+  updated_at: timestamp("updated_at").defaultNow().$onUpdate(() => new Date())
+});
+
+// Referral claims table - tracks when someone uses a referral code
+export const referralClaimTable = pgTable("referral_claims", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  referrer_id: uuid("referrer_id").notNull().references(() => usersTable.id, { onDelete: 'cascade' }), // User who owns the referral code
+  referee_id: uuid("referee_id").notNull().references(() => usersTable.id, { onDelete: 'cascade' }), // User who used the referral code
+  referral_code: varchar("referral_code", { length: 10 }).notNull(), // The code that was used
+
+  
+  // Claim status and timing
+  status: referralClaimStatusEnum("status").default("pending"),
+  claimed_at: timestamp("claimed_at"), // When the rewards were actually given
+  expires_at: timestamp("expires_at").notNull(), // 7 days from creation
+  
 });
 
 // Define relationships
@@ -67,7 +96,13 @@ export const usersRelations = relations(usersTable, ({ one, many }) => ({
     fields: [usersTable.id],
     references: [pinTable.user_id]
   }),
-  pinAuditHistory: many(pinAuditTable)
+  pinAuditHistory: many(pinAuditTable),
+  userReferral: one(userReferralTable, {
+    fields: [usersTable.id],
+    references: [userReferralTable.user_id]
+  }),
+  referralsMade: many(referralClaimTable, { relationName: "referrer" }),
+  referralsUsed: many(referralClaimTable, { relationName: "referee" })
 }));
 
 export const authRelations = relations(authTable, ({ one }) => ({
@@ -91,6 +126,32 @@ export const pinAuditRelations = relations(pinAuditTable, ({ one }) => ({
   })
 }));
 
+export const userReferralRelations = relations(userReferralTable, ({ one, many }) => ({
+  user: one(usersTable, {
+    fields: [userReferralTable.user_id],
+    references: [usersTable.id]
+  }),
+  claims: many(referralClaimTable, { relationName: "referrer" })
+}));
+
+export const referralClaimRelations = relations(referralClaimTable, ({ one }) => ({
+  referrer: one(usersTable, {
+    fields: [referralClaimTable.referrer_id],
+    references: [usersTable.id],
+    relationName: "referrer"
+  }),
+  referee: one(usersTable, {
+    fields: [referralClaimTable.referee_id],
+    references: [usersTable.id],
+    relationName: "referee"
+  }),
+  referralCode: one(userReferralTable, {
+    fields: [referralClaimTable.referrer_id],
+    references: [userReferralTable.user_id],
+    relationName: "referrer"
+  })
+}));
+
 // type
 export type User = typeof usersTable.$inferSelect;
 export type NewUser = typeof usersTable.$inferInsert;
@@ -103,3 +164,9 @@ export type NewPin = typeof pinTable.$inferInsert;
 
 export type PinAudit = typeof pinAuditTable.$inferSelect;
 export type NewPinAudit = typeof pinAuditTable.$inferInsert;
+
+export type UserReferral = typeof userReferralTable.$inferSelect;
+export type NewUserReferral = typeof userReferralTable.$inferInsert;
+
+export type ReferralClaim = typeof referralClaimTable.$inferSelect;
+export type NewReferralClaim = typeof referralClaimTable.$inferInsert;

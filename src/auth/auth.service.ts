@@ -1,8 +1,9 @@
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import db from "../db/db.js";
-import { authTable,  pinAuditTable,  pinTable,  usersTable, } from "../db/schema.js";
+import { authTable,  pinAuditTable,  pinTable,  referralClaimTable,  userReferralTable,  usersTable, } from "../db/schema.js";
 import { hashService } from "../helpers/hashService.js";
 import { authTokenService } from "../helpers/tokenService.js";
+import { generateRandomCode } from "../helpers/middleware.js";
 
 export const registerService = async(userData:any)=>{
 return await db.transaction(async (tx) => {
@@ -14,6 +15,35 @@ return await db.transaction(async (tx) => {
       user_id: newUser.id,
       password_hash: hashed_password,
     }).returning();
+    // 3. Create empty PIN record
+    await tx.insert(pinTable).values({
+      user_id: newUser.id,
+      transaction_pin_hash: null,
+      pin_set: false,
+      pin_attempts: 0,
+      pin_locked_until: null,
+    });
+    // 4. Create referral code for the new user
+    const referralCode = generateRandomCode()
+    await tx.insert(userReferralTable).values({
+        user_id: newUser.id,
+        referral_code: referralCode,
+    });
+    // 5. Optionally, record if referral code is provided
+    const userReferrer = await tx.query.userReferralTable.findFirst({
+        where: eq(userReferralTable.referral_code, userData.referral_code)
+    });
+    if(userData.referral_code && userReferrer){
+        await tx.insert(referralClaimTable).values({
+            referrer_id: userReferrer.user_id,
+            referee_id: newUser.id,
+            referral_code: userData.referral_code,
+            status: 'pending',
+            expires_at: sql`NOW() + INTERVAL '7 days'`,
+        });
+    }
+
+
     
     return { user: newUser, auth: authRecord };
   });}
