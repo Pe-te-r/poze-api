@@ -1,5 +1,5 @@
 import type { Context } from "hono";
-import { loginService, registerService, setPinService } from "./auth.service.js";
+import { loginService, registerService, setPinService, updatePinService } from "./auth.service.js";
 
 export const registerController = async(c:Context)=>{
     const registerData = await c.req.json();
@@ -18,4 +18,10 @@ export const setPinController = async(c:Context)=>{
     // Assuming setPinService is defined in auth.service.ts
     const data = await setPinService(userId, pin);
     return c.json({ message: "PIN set successfully", 'data' :{}}, 200);
+}
+
+export const changePinController = async(c:Context)=>{
+    const { userId, newPin, reason } = await c.req.json();
+    const data = await updatePinService(userId, newPin, reason);
+    return c.json({ message: "PIN changed successfully", 'data' :{}}, 200);
 }

@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import db from "../db/db.js";
-import { authTable, pinManageTable, usersTable, } from "../db/schema.js";
+import { authTable,  pinAuditTable,  pinTable,  usersTable, } from "../db/schema.js";
 import { hashService } from "../helpers/hashService.js";
 import { authTokenService } from "../helpers/tokenService.js";
 
@@ -58,18 +58,44 @@ export const loginService = async(phone:string, password:string)=>{
 export const setPinService = async(userId:string, pin:string)=>{
     const user = await db.query.usersTable.findFirst({
         where: eq(usersTable.id,userId),
-        with: { auth: true, pinHistory: true }
+        with: {  pin: true }
     });
     if(!user) throw new Error("User not found");
-    const auth = user.auth;
+    if(user.pin?.pin_set) throw new Error("PIN already set. Use change PIN instead.");
     const updatedPin = await hashService.hashPin(pin);
-    await db.update(pinManageTable).set({
+    await db.update(pinTable).set({
         transaction_pin_hash: updatedPin,
         pin_set: true,
         pin_attempts: 0,
         pin_locked_until: null,
-        changed_at: new Date(),
-        changed_by: 'user',
+    }).where(eq(pinTable.user_id, userId));
+    // record in audit table can be added here
+    await db.insert(pinAuditTable).values({
+        user_id: userId,
+        action_type: 'created',
         reason: 'Initial PIN set'
-    }).where(eq(pinManageTable.user_id, userId));
+    });
+    return { message: "PIN set successfully" };
+}
+
+export const updatePinService = async(userId:string,newPin:string,reason:string='User changed the password')=>{
+    const user = await db.query.usersTable.findFirst({
+        where: eq(usersTable.id,userId),
+        with: {  pin: true }
+    });
+    if(!user) throw new Error("User not found");
+    if(!user.pin?.pin_set) throw new Error("PIN not set. Use set PIN first.");
+    const updatedPin = await hashService.hashPin(newPin);
+    await db.update(pinTable).set({
+        transaction_pin_hash: updatedPin,
+        pin_attempts: 0,
+        pin_locked_until: null,
+    }).where(eq(pinTable.user_id, userId));
+    // record in audit table can be added here
+    await db.insert(pinAuditTable).values({
+        user_id: userId,
+        action_type: 'changed',
+        reason
+    });
+    return { message: "PIN updated successfully" };
 }

@@ -33,17 +33,28 @@ export const authTable = pgTable("authentication", {
   updated_at: timestamp("updated_at").defaultNow().$onUpdate(() => new Date())
 });
 
-// Optional: Transaction PIN history table for security auditing
-export const pinManageTable = pgTable("pin_history", {
+// Transaction PIN management table for current PIN details
+export const pinTable = pgTable("user_pin", {
   id: uuid("id").primaryKey().defaultRandom(),
-  user_id: uuid("user_id").notNull().references(() => usersTable.id, { onDelete: 'cascade' }),
+  user_id: uuid("user_id").notNull().unique().references(() => usersTable.id, { onDelete: 'cascade' }),
   pin_set: boolean("pin_set").default(false), // Whether PIN has been set
-  transaction_pin_hash: varchar("transaction_pin_hash", { length: 255 }), // PIN for money transactions
+  transaction_pin_hash: varchar("transaction_pin_hash", { length: 255 }), // Current PIN hash for money transactions
   pin_attempts: integer("pin_attempts").default(0), // PIN attempt counter
   pin_locked_until: timestamp("pin_locked_until"), // PIN lock timestamp
-  changed_at: timestamp("changed_at").defaultNow(),
-  changed_by: varchar("changed_by", { length: 50 }), // System or admin who changed it
-  reason: varchar("reason", { length: 100 }) // Reason for PIN change
+  updated_at: timestamp("updated_at").defaultNow().$onUpdate(() => new Date())
+});
+
+// PIN audit history table for security auditing and tracking changes
+export const pinAuditTable = pgTable("pin_audit_history", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  user_id: uuid("user_id").notNull().references(() => usersTable.id, { onDelete: 'cascade' }),
+  action_type: varchar("action_type", { length: 50 }).notNull(), // 'created', 'changed', 'reset', 'locked', 'unlocked'
+  // old_pin_hash: varchar("old_pin_hash", { length: 255 }), // Previous PIN hash (for change actions)
+  // new_pin_hash: varchar("new_pin_hash", { length: 255 }), // New PIN hash (for change actions)
+  changed_at: timestamp("changed_at").defaultNow().notNull(),
+  reason: varchar("reason", { length: 100 }), // Reason for PIN change
+  // ip_address: varchar("ip_address", { length: 45 }), // IP address where action was performed
+  // user_agent: varchar("user_agent", { length: 500 }) // Browser/device info
 });
 
 // Define relationships
@@ -52,7 +63,11 @@ export const usersRelations = relations(usersTable, ({ one, many }) => ({
     fields: [usersTable.id],
     references: [authTable.user_id]
   }),
-  pinHistory: many(pinManageTable)
+  pin: one(pinTable, {
+    fields: [usersTable.id],
+    references: [pinTable.user_id]
+  }),
+  pinAuditHistory: many(pinAuditTable)
 }));
 
 export const authRelations = relations(authTable, ({ one }) => ({
@@ -62,9 +77,16 @@ export const authRelations = relations(authTable, ({ one }) => ({
   })
 }));
 
-export const pinHistoryRelations = relations(pinManageTable, ({ one }) => ({
+export const pinRelations = relations(pinTable, ({ one }) => ({
   user: one(usersTable, {
-    fields: [pinManageTable.user_id],
+    fields: [pinTable.user_id],
+    references: [usersTable.id]
+  })
+}));
+
+export const pinAuditRelations = relations(pinAuditTable, ({ one }) => ({
+  user: one(usersTable, {
+    fields: [pinAuditTable.user_id],
     references: [usersTable.id]
   })
 }));
@@ -76,5 +98,8 @@ export type NewUser = typeof usersTable.$inferInsert;
 export type Auth = typeof authTable.$inferSelect;
 export type NewAuth = typeof authTable.$inferInsert;
 
-export type PinHistory = typeof pinManageTable.$inferSelect;
-export type NewPinHistory = typeof pinManageTable.$inferInsert;
+export type Pin = typeof pinTable.$inferSelect;
+export type NewPin = typeof pinTable.$inferInsert;
+
+export type PinAudit = typeof pinAuditTable.$inferSelect;
+export type NewPinAudit = typeof pinAuditTable.$inferInsert;
