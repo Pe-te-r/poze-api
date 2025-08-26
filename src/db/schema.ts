@@ -11,7 +11,7 @@ export const referralClaimStatusEnum = pgEnum("referral_claim_status", ["pending
 export const usersTable = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
   first_name: varchar("first_name", { length: 100 }).notNull(),
-  last_name: varchar("last_name", { length: 100 }), // Optional
+  // last_name: varchar("last_name", { length: 100 }), // Optional
   phone: varchar("phone", { length: 15 }).notNull().unique(),
   phone_verified: boolean("phone_verified").default(false),
   role: roleEnum("role").default("customer"),
