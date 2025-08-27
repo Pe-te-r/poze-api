@@ -4,8 +4,8 @@ import { loginService, registerService, setPinService, updatePinService } from "
 export const registerController = async(c:Context)=>{
     try {
         const registerData = await c.req.json();
-        const data = await registerService(registerData);
-        return c.json({ message: "User registered successfully", data }, 201);
+        await registerService(registerData);
+        return c.json({ message: "User registered successfully. Try to login" }, 201);
     } catch (error) {
         return c.json({ message: (error as Error).message }, 400);
     }

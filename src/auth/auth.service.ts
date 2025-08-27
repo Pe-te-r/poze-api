@@ -48,8 +48,6 @@ return await db.transaction(async (tx) => {
     }
 
 
-    
-    return { user: newUser, auth: authRecord };
   });}
 
 
