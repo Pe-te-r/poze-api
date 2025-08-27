@@ -1,5 +1,4 @@
 import jwt from 'jsonwebtoken';
-import { roleEnum } from '../db/schema.js';
 
 export class AuthTokenService {
   private readonly secretKey: string;

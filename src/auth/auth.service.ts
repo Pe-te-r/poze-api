@@ -61,7 +61,8 @@ export const loginService = async(phone:string, password:string)=>{
     if(!user) throw new Error("User not found");
     // check if login attempts exceeded
     if(user.auth?.locked_until && user.auth.locked_until > new Date()){
-        throw new Error("Account locked due to multiple failed login attempts. Try again later.");
+        const minutesRemaining = Math.ceil((user.auth.locked_until.getTime() - new Date().getTime()) / 1000 / 60);
+        throw new Error(`Account locked due to multiple failed login attempts. Try again in ${minutesRemaining} minutes.`);
     }
     const auth = user.auth;
     if(!auth) throw new Error("Authentication record not found");

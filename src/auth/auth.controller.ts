@@ -15,10 +15,9 @@ export const loginController = async(c:Context)=>{
     try {
         const { phone, password } = await c.req.json();
         const data = await loginService(phone, password);
-        return c.json({ message: "Login successful", data }, 200);
+        return c.json({status:'success', message: "Login successful", data }, 200);
     } catch (error) {
-        console.error(error);
-        return c.json({ message: (error as Error).message }, 400);
+        return c.json({status:'error', message: (error as Error).message }, 400);
     }
 }
 
