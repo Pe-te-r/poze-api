@@ -2,9 +2,13 @@ import type { Context } from "hono";
 import { loginService, registerService, setPinService, updatePinService } from "./auth.service.js";
 
 export const registerController = async(c:Context)=>{
-    const registerData = await c.req.json();
-    const data = await registerService(registerData);
-    return c.json({ message: "User registered successfully", data }, 201);
+    try {
+        const registerData = await c.req.json();
+        const data = await registerService(registerData);
+        return c.json({ message: "User registered successfully", data }, 201);
+    } catch (error) {
+        return c.json({ message: (error as Error).message }, 400);
+    }
 }
 
 export const loginController = async(c:Context)=>{

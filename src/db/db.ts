@@ -4,7 +4,7 @@ import { Client } from "pg";
 import * as schema from "./schema.js"
 
 export const client = new Client({
-    connectionString: process.env.Database_URL as string,   //get the database url from the environment
+    connectionString: process.env.DATABASE_URL as string,   //get the database url from the environment
 })
 
 const main = async () => {
