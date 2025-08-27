@@ -1,4 +1,4 @@
-import * as jwt from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 import { roleEnum } from '../db/schema.js';
 
 export class AuthTokenService {

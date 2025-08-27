@@ -12,9 +12,14 @@ export const registerController = async(c:Context)=>{
 }
 
 export const loginController = async(c:Context)=>{
-    const { phone, password } = await c.req.json();
-    const data = await loginService(phone, password);
-    return c.json({ message: "Login successful", data }, 200);
+    try {
+        const { phone, password } = await c.req.json();
+        const data = await loginService(phone, password);
+        return c.json({ message: "Login successful", data }, 200);
+    } catch (error) {
+        console.error(error);
+        return c.json({ message: (error as Error).message }, 400);
+    }
 }
 
 export const setPinController = async(c:Context)=>{
