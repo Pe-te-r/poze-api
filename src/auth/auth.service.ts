@@ -6,6 +6,7 @@ import { authTokenService } from "../helpers/tokenService.js";
 import { generateRandomCode } from "../helpers/middleware.js";
 
 export const registerService = async(userData:any)=>{
+    console.log('userData is:', userData)
     const phone_exits = await db.query.usersTable.findFirst({
         where: eq(usersTable.phone, userData.phone)
     });
@@ -35,13 +36,13 @@ return await db.transaction(async (tx) => {
     });
     // 5. Optionally, record if referral code is provided
     const userReferrer = await tx.query.userReferralTable.findFirst({
-        where: eq(userReferralTable.referral_code, userData.referral_code)
+        where: eq(userReferralTable.referral_code, userData.invitation_code)
     });
-    if(userData.referral_code && userReferrer){
+    if(userData.invitation_code && userReferrer){
         await tx.insert(referralClaimTable).values({
             referrer_id: userReferrer.user_id,
             referee_id: newUser.id,
-            referral_code: userData.referral_code,
+            referral_code: userData.invitation_code,
             status: 'pending',
             expires_at: sql`NOW() + INTERVAL '7 days'`,
         });

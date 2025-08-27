@@ -2,6 +2,7 @@ import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
 import { authApi } from './auth/auth.route.js'
 import { cors } from 'hono/cors'
+import { dashboardApi } from './dashboard/dashboard.route.js'
 
 const app = new Hono()
 app.use('*', cors())
@@ -16,6 +17,7 @@ app.get('/', (c) => {
 
 // mount authApi router
 app.route('/auth',authApi)
+app.route('/dashboard',dashboardApi)
 
 serve({
   fetch: app.fetch,
