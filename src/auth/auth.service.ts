@@ -61,6 +61,7 @@ export const loginService = async(phone:string, password:string)=>{
         with: { auth: true }
     })
     if(!user) throw new Error("User not found");
+    if(user.status !== 'active') throw new Error(`User account is ${user.status}`);
     // check if login attempts exceeded
     if(user.auth?.locked_until && user.auth.locked_until > new Date()){
         const minutesRemaining = Math.ceil((user.auth.locked_until.getTime() - new Date().getTime()) / 1000 / 60);
