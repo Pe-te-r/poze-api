@@ -2,7 +2,7 @@ import db from "../db/db.js"
 
 export const allUsersAdmin = () => {
     const users = db.query.usersTable.findMany({
-        columns: {first_name:true,phone:true,created_at:true,id:true,status:true,role:true},
+        columns: {id:true,first_name:true,phone:true,status:true,role:true,created_at:true},
         orderBy: (users, { desc }) => [desc(users.created_at)],
         with:{
             auth:{
@@ -24,16 +24,26 @@ export const allUsersAdmin = () => {
                 }
             },
             referralsMade:{
+                columns:{
+                    status:true,
+                    claimed_at:true,
+                    expires_at:true,
+                },
                 with:{
                     referee:{
-                        columns:{first_name:true,phone:true,created_at:true,id:true,status:true,role:true}
+                        columns:{id:true,first_name:true,phone:true,status:true}
                     }
                 }
             },
             referralsUsed:{
+                columns:{
+                    status:true,
+                    claimed_at:true,
+                    expires_at:true
+                },
                 with:{
                     referrer:{
-                        columns:{first_name:true,phone:true,created_at:true,id:true,status:true,role:true}
+                        columns:{id:true,first_name:true,phone:true,created_at:true,status:true}
                     }
                 }
             },

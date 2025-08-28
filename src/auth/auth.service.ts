@@ -46,6 +46,9 @@ return await db.transaction(async (tx) => {
             status: 'pending',
             expires_at: sql`NOW() + INTERVAL '7 days'`,
         });
+        await tx.update(userReferralTable).set({
+            total_referrals: sql`${userReferralTable.total_referrals} + 1`
+        }).where(eq(userReferralTable.user_id, userReferrer.user_id));
     }
 
 
