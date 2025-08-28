@@ -1,4 +1,14 @@
+import { eq } from "drizzle-orm";
 import db from "../db/db.js"
+import { usersTable } from "../db/schema.js";
+
+export const changeUserStatusService = async (userId: string, status: string) => {
+    const user = await db.query.usersTable.findFirst({
+        where: eq(usersTable.id, userId)
+    });
+    if (!user) throw new Error("User not found");
+    await db.update(usersTable).set({ status }).where(eq(usersTable.id, userId));
+}   
 
 export const allUsersAdmin = () => {
     const users = db.query.usersTable.findMany({
