@@ -148,7 +148,7 @@ export const referralClaimRelations = relations(referralClaimTable, ({ one }) =>
   referralCode: one(userReferralTable, {
     fields: [referralClaimTable.referrer_id],
     references: [userReferralTable.user_id],
-    relationName: "referrer"
+    relationName: "used_referral_code"
   })
 }));
 
