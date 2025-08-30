@@ -55,6 +55,7 @@ return await db.transaction(async (tx) => {
   });}
 
 
+  
 export const loginService = async(phone:string, password:string)=>{
     const user = await db.query.usersTable.findFirst({
         where: eq(usersTable.phone,phone),
