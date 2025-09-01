@@ -17,8 +17,8 @@ export const transactionsDepositController = async(c:Context)=>{
 
 export const transactionsGetDepositsController = async(c:Context)=>{
     try {
-        const { status } = c.req.query();
-        console.log("Status query param:", status);
+        const status = c.req.query('status');
+        console.log("Fetching deposits with status:", status);
         const deposits = await transactionGetDepositsService({ status });
         console.log(deposits);
         return c.json({message:'deposits', data: deposits}, 200);
