@@ -4,7 +4,7 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
-    "start": "node dist/index.js",
+    "start": "node dist/src/index.js",
     "dev:db:up": "docker-compose up -d",
     "dev:db:down": "docker-compose down",
     "dev:db:reset": "docker-compose down -v && docker-compose up -d",
@@ -19,13 +19,14 @@
     "@neondatabase/serverless": "^1.0.1",
     "bcrypt": "^6.0.0",
     "dotenv": "^17.2.1",
-    "drizzle-orm": "^0.31.4",
+    "drizzle-orm": "^0.44.5",
     "hono": "^4.9.4",
     "jsonwebtoken": "^9.0.2",
     "pg": "^8.16.3"
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^20.11.17",
     "@types/pg": "^8.15.5",
     "drizzle-kit": "^0.31.4",

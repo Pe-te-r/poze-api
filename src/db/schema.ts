@@ -99,78 +99,73 @@ export const depositTable = pgTable("deposits", {
 });
 
 // Define relationships - temporarily commented to fix version compatibility issues
-// export const usersRelations = relations(usersTable, ({ one, many }) => ({
-//   auth: one(authTable, {
-//     fields: [usersTable.id],
-//     references: [authTable.user_id]
-//   }),
-//   pin: one(pinTable, {
-//     fields: [usersTable.id],
-//     references: [pinTable.user_id]
-//   }),
-//   pinAuditHistory: many(pinAuditTable),
-//   userReferral: one(userReferralTable, {
-//     fields: [usersTable.id],
-//     references: [userReferralTable.user_id]
-//   }),
-//   referralsMade: many(referralClaimTable, { relationName: "referrer" }),
-//   referralsUsed: many(referralClaimTable, { relationName: "referee" }),
-//   deposits: many(depositTable)
-// }));
+export const usersRelations = relations(usersTable, ({ one, many }) => ({
+  auth: one(authTable, {
+    fields: [usersTable.id],
+    references: [authTable.user_id]
+  }),
+  pin: one(pinTable, {
+    fields: [usersTable.id],
+    references: [pinTable.user_id]
+  }),
+  pinAuditHistory: many(pinAuditTable),
+  userReferral: one(userReferralTable, {
+    fields: [usersTable.id],
+    references: [userReferralTable.user_id]
+  }),
+  referralsMade: many(referralClaimTable, { relationName: "referrer" }),
+  referralsUsed: many(referralClaimTable, { relationName: "referee" }),
+  deposits: many(depositTable)
+}));
 
-// export const authRelations = relations(authTable, ({ one }) => ({
-//   user: one(usersTable, {
-//     fields: [authTable.user_id],
-//     references: [usersTable.id]
-//   })
-// }));
 
-// export const pinRelations = relations(pinTable, ({ one }) => ({
-//   user: one(usersTable, {
-//     fields: [pinTable.user_id],
-//     references: [usersTable.id]
-//   })
-// }));
+export const pinRelations = relations(pinTable, ({ one }) => ({
+  user: one(usersTable, {
+    fields: [pinTable.user_id],
+    references: [usersTable.id]
+  })
+}));
 
-// export const pinAuditRelations = relations(pinAuditTable, ({ one }) => ({
-//   user: one(usersTable, {
-//     fields: [pinAuditTable.user_id],
-//     references: [usersTable.id]
-//   })
-// }));
 
-// export const userReferralRelations = relations(userReferralTable, ({ one, many }) => ({
-//   user: one(usersTable, {
-//     fields: [userReferralTable.user_id],
-//     references: [usersTable.id]
-//   }),
-//   claims: many(referralClaimTable, { relationName: "referrer" })
-// }));
+export const pinAuditRelations = relations(pinAuditTable, ({ one }) => ({
+  user: one(usersTable, {
+    fields: [pinAuditTable.user_id],
+    references: [usersTable.id]
+  })
+}));
 
-// export const referralClaimRelations = relations(referralClaimTable, ({ one }) => ({
-//   referrer: one(usersTable, {
-//     fields: [referralClaimTable.referrer_id],
-//     references: [usersTable.id],
-//     relationName: "referrer"
-//   }),
-//   referee: one(usersTable, {
-//     fields: [referralClaimTable.referee_id],
-//     references: [usersTable.id],
-//     relationName: "referee"
-//   }),
-//   referralCode: one(userReferralTable, {
-//     fields: [referralClaimTable.referrer_id],
-//     references: [userReferralTable.user_id],
-//     relationName: "used_referral_code"
-//   })
-// }));
+export const userReferralRelations = relations(userReferralTable, ({ one, many }) => ({
+  user: one(usersTable, {
+    fields: [userReferralTable.user_id],
+    references: [usersTable.id]
+  }),
+  claims: many(referralClaimTable, { relationName: "referrer" })
+}));
 
-// export const depositRelations = relations(depositTable, ({ one }) => ({
-//     user: one(usersTable, {
-//         fields: [depositTable.user_id],
-//         references: [usersTable.id]
-//     })
-// }));
+export const referralClaimRelations = relations(referralClaimTable, ({ one }) => ({
+  referrer: one(usersTable, {
+    fields: [referralClaimTable.referrer_id],
+    references: [usersTable.id],
+    relationName: "referrer"
+  }),
+  referee: one(usersTable, {
+    fields: [referralClaimTable.referee_id],
+    references: [usersTable.id],
+    relationName: "referee"
+  }),
+  referralCode: one(userReferralTable, {
+    fields: [referralClaimTable.referrer_id],
+    references: [userReferralTable.user_id],
+    relationName: "used_referral_code"
+  })
+}));
+
+export const depositRelations = relations(depositTable, ({ one }) => ({
+    user: one(usersTable, {
+        fields: [depositTable.user_id],
+        references: [usersTable.id]
+    })
+}));
 
 // type
 export type User = typeof usersTable.$inferSelect;
