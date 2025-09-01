@@ -91,7 +91,7 @@ export const referralClaimTable = pgTable("referral_claims", {
 export const depositTable = pgTable("deposits", {
     id: uuid("id").primaryKey().defaultRandom(),
     user_id: uuid("user_id").notNull().references(() => usersTable.id, { onDelete: 'cascade' }),
-    amount: integer("amount").notNull(), 
+    amount: integer("amount"), 
     status: depositStatusEnum("status").default('pending'), 
     reference: varchar("reference", { length: 100 }).notNull().unique(),
     created_at: timestamp("created_at").defaultNow().notNull(),

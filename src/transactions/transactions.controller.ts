@@ -4,7 +4,7 @@ import { transactionDepositService, transactionGetDepositsService } from "./tran
 export const transactionsDepositController = async(c:Context)=>{
     try {
         const { userId, amount, reference } = await c.req.json();
-        if(!userId || !amount || !reference) {
+        if(!userId || !reference) {
             return c.json({message: "Missing required fields"}, 400);
         }
         await transactionDepositService(userId, amount, reference);

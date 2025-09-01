@@ -4,7 +4,6 @@ import { depositTable } from "../db/schema.js";
 export const transactionDepositService  = async(userId:string, amount:number, reference:string)=>{
     const deposit = await db.insert(depositTable).values({
         user_id: userId,
-        amount,
         reference,
         status: 'pending'
     })
