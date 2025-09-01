@@ -3,9 +3,10 @@ import { relations, sql } from "drizzle-orm";
 
 // Role enum
 export const roleEnum = pgEnum("role", ["customer", "admin"]);
+export const depositStatusEnum = pgEnum("deposit_status", ["pending", "confirmed", "rejected"]);
 
 // Referral claim status enum
-export const referralClaimStatusEnum = pgEnum("referral_claim_status", ["pending", "claimed", "expired"]);
+export const referralClaimStatusEnum = pgEnum("referral_claims_status", ["pending", "claimed", "expired"]);
 
 // Users table
 export const usersTable = pgTable("users", {
@@ -86,6 +87,17 @@ export const referralClaimTable = pgTable("referral_claims", {
   
 });
 
+// deposit table
+export const depositTable = pgTable("deposits", {
+    id: uuid("id").primaryKey().defaultRandom(),
+    user_id: uuid("user_id").notNull().references(() => usersTable.id, { onDelete: 'cascade' }),
+    amount: integer("amount").notNull(), 
+    status: depositStatusEnum("status").default('pending'), 
+    reference: varchar("reference", { length: 100 }).notNull().unique(),
+    created_at: timestamp("created_at").defaultNow().notNull(),
+    updated_at: timestamp("updated_at").defaultNow().$onUpdate(() => new Date())
+});
+
 // Define relationships
 export const usersRelations = relations(usersTable, ({ one, many }) => ({
   auth: one(authTable, {
@@ -102,7 +114,8 @@ export const usersRelations = relations(usersTable, ({ one, many }) => ({
     references: [userReferralTable.user_id]
   }),
   referralsMade: many(referralClaimTable, { relationName: "referrer" }),
-  referralsUsed: many(referralClaimTable, { relationName: "referee" })
+  referralsUsed: many(referralClaimTable, { relationName: "referee" }),
+  deposits: many(depositTable)
 }));
 
 export const authRelations = relations(authTable, ({ one }) => ({
@@ -152,6 +165,13 @@ export const referralClaimRelations = relations(referralClaimTable, ({ one }) =>
   })
 }));
 
+export const depositRelations = relations(depositTable, ({ one }) => ({
+    user: one(usersTable, {
+        fields: [depositTable.user_id],
+        references: [usersTable.id]
+    })
+}));
+
 // type
 export type User = typeof usersTable.$inferSelect;
 export type NewUser = typeof usersTable.$inferInsert;
@@ -170,3 +190,6 @@ export type NewUserReferral = typeof userReferralTable.$inferInsert;
 
 export type ReferralClaim = typeof referralClaimTable.$inferSelect;
 export type NewReferralClaim = typeof referralClaimTable.$inferInsert;
+
+export type Deposit = typeof depositTable.$inferSelect;
+export type NewDeposit = typeof depositTable.$inferInsert;  
