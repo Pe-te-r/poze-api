@@ -31,6 +31,7 @@ export const transactionGetDepositsService = async (filter: { status?: string })
             where: eq(depositTable.status, filter.status), 
             orderBy: (deposits, { desc }) => [desc(deposits.created_at)],
         });
+        
         return deposits;
     }
 

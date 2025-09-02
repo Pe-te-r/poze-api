@@ -6,12 +6,16 @@ import { authTokenService } from "../helpers/tokenService.js";
 import { generateRandomCode } from "../helpers/middleware.js";
 
 export const registerService = async(userData:any)=>{
-    console.log('userData is:', userData)
-    const phone_exits = await db.query.usersTable.findFirst({
-        where: eq(usersTable.phone, userData.phone)
-    });
-    if(phone_exits) throw new Error("Phone number already registered");
+
 return await db.transaction(async (tx) => {
+        console.log('userData is:', userData)
+           const phone_exists = await db.query.usersTable.findFirst({
+            where: eq(usersTable.phone, userData.phone)
+        });
+        
+        console.log('here one - after query');
+        console.log('Phone exists result:', phone_exists);
+    if(phone_exists) throw new Error("Phone number already registered");
     // 1. Create the user
     const [newUser] = await tx.insert(usersTable).values(userData).returning();
     const hashed_password = await hashService.hashPassword(userData.password);

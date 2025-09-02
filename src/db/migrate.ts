@@ -1,6 +1,7 @@
 import "dotenv/config";
-import { migrate } from "drizzle-orm/neon-http/migrator";
+import { migrate } from "drizzle-orm/neon-serverless/migrator"; // Use neon-serverless for WebSocket
 import db from "./db.js";
+
 
 async function migration() {
     try {

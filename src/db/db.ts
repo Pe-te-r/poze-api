@@ -20,11 +20,22 @@
 // export default db;
 
 import "dotenv/config";
-import { drizzle } from "drizzle-orm/neon-http";
+import { drizzle } from "drizzle-orm/neon-serverless";
 import { neon } from "@neondatabase/serverless";
 import * as schema from "./schema.js"
-export const client = neon(process.env.DATABASE_URL as string)
+import { Pool } from "pg";
+export const client = neon(process.env.DATABASE_URL as string);
 
-const db = drizzle(client, { schema, logger: true }) 
+// export const client = new Pool({ connectionString: process.env.DATABASE_URL });
+
+// const client = neon(process.env.DATABASE_URL as string);
+
+
+const db = drizzle(client, { schema, logger: true });
+
+
+
 
 export default db;
+
+
